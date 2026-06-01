@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Irrigation — D-CoE IoT Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <div class="header__brand">
+          <div class="header__brand-block">
+            <span class="header__org">D-CoE · IISc Bangalore</span>
+            <span class="header__badge">Industry 4.0 · IoT Hands-on Kit</span>
+          </div>
+          <h1>Smart Irrigation</h1>
+          <p class="header__sub">Real-time soil moisture monitoring &amp; pump control</p>
+        </div>
+        <div class="header__status" id="connectionStatus">
+          <span class="dot dot--offline"></span>
+          <span>Waiting for device…</span>
+        </div>
+      </header>
+
+      <main class="grid">
+        <section class="card card--hero">
+          <h2>Soil Moisture</h2>
+          <div class="moisture-display">
+            <div class="moisture-ring" id="moistureRing">
+              <svg viewBox="0 0 120 120">
+                <circle class="moisture-ring__bg" cx="60" cy="60" r="52" />
+                <circle class="moisture-ring__fill" id="moistureArc" cx="60" cy="60" r="52" />
+              </svg>
+              <div class="moisture-ring__value">
+                <span id="moistureValue">—</span>
+                <small>%</small>
+              </div>
+            </div>
+            <div class="moisture-meta">
+              <div class="meta-row">
+                <span>Raw ADC</span>
+                <strong id="moistureRaw">—</strong>
+              </div>
+              <div class="meta-row">
+                <span>Status</span>
+                <strong id="moistureLabel">—</strong>
+              </div>
+              <div class="moisture-bar">
+                <div class="moisture-bar__dry" id="dryMarker"></div>
+                <div class="moisture-bar__wet" id="wetMarker"></div>
+                <div class="moisture-bar__fill" id="moistureBarFill"></div>
+              </div>
+              <div class="moisture-bar__labels">
+                <span>Dry</span>
+                <span>Wet</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Water Pump</h2>
+          <div class="pump-status" id="pumpStatus">
+            <div class="pump-icon pump-icon--off" id="pumpIcon">
+              <svg viewBox="0 0 48 48" fill="none">
+                <path d="M8 28h32v8H8z" stroke="currentColor" stroke-width="2"/>
+                <path d="M16 20v8M24 16v12M32 20v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="24" cy="36" r="4" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <p class="pump-label" id="pumpLabel">Pump OFF</p>
+          </div>
+          <div class="mode-toggle">
+            <button class="mode-btn mode-btn--active" data-mode="auto" id="btnAuto">Auto</button>
+            <button class="mode-btn" data-mode="manual" id="btnManual">Manual</button>
+          </div>
+          <div class="manual-controls" id="manualControls" hidden>
+            <button class="btn btn--primary" id="btnPumpOn">Turn Pump ON</button>
+            <button class="btn btn--ghost" id="btnPumpOff">Turn Pump OFF</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Thresholds</h2>
+          <p class="card__hint">Auto mode: pump starts below dry threshold, stops above wet threshold.</p>
+          <div class="threshold-row">
+            <label for="dryThreshold">Dry threshold (%)</label>
+            <input type="range" id="dryThreshold" min="0" max="100" value="35" />
+            <output id="dryThresholdOut">35</output>
+          </div>
+          <div class="threshold-row">
+            <label for="wetThreshold">Wet threshold (%)</label>
+            <input type="range" id="wetThreshold" min="0" max="100" value="65" />
+            <output id="wetThresholdOut">65</output>
+          </div>
+          <button class="btn btn--secondary" id="btnApplyThresholds">Apply Thresholds</button>
+        </section>
+
+        <section class="card card--info">
+          <h2>Device Info</h2>
+          <dl class="info-list">
+            <div><dt>Device ID</dt><dd id="deviceId">—</dd></div>
+            <div><dt>Wi-Fi RSSI</dt><dd id="rssi">—</dd></div>
+            <div><dt>Uptime</dt><dd id="uptime">—</dd></div>
+            <div><dt>Last seen</dt><dd id="lastSeen">—</dd></div>
+            <div><dt>Mode</dt><dd id="modeDisplay">—</dd></div>
+          </dl>
+        </section>
+      </main>
+
+      <footer class="footer">
+        Centre of Excellence in Design · IISc Bangalore ·
+        <a href="/docs/wiring-card.html">Print wiring card</a>
+      </footer>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>

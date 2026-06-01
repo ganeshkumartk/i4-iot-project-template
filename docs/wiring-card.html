@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Smart Irrigation — Wiring Card | D-CoE IISc</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Serif+4:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --forest: #16a34a;
+        --deep-forest: #0f7a35;
+        --lime: #bef264;
+        --black: #000;
+        --gray: #e5e7eb;
+        --font: "Inter", system-ui, sans-serif;
+        --serif: "Source Serif 4", Georgia, serif;
+      }
+
+      * { box-sizing: border-box; }
+
+      @page { size: A4 portrait; margin: 10mm; }
+
+      body {
+        margin: 0;
+        font-family: var(--font);
+        font-size: 8.5pt;
+        line-height: 1.3;
+        color: var(--black);
+        background: #fff;
+      }
+
+      .page { max-width: 210mm; margin: 0 auto; padding: 8mm; }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        border-bottom: 3px solid var(--forest);
+        padding-bottom: 5px;
+        margin-bottom: 6px;
+      }
+
+      .brand h1 { margin: 0; font-size: 14pt; font-weight: 700; }
+      .brand p {
+        margin: 2px 0 0;
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 7.5pt;
+        color: #333;
+      }
+
+      .badge {
+        background: var(--lime);
+        font-size: 7pt;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        padding: 3px 8px;
+      }
+
+      h2 {
+        margin: 6px 0 3px;
+        font-size: 8pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--deep-forest);
+      }
+
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+      .wiring-photo {
+        margin: 4px 0 6px;
+        text-align: center;
+      }
+
+      .wiring-photo img {
+        width: 100%;
+        max-height: 95mm;
+        object-fit: contain;
+        border: 1px solid var(--gray);
+        border-radius: 2px;
+      }
+
+      .wiring-photo figcaption {
+        margin-top: 3px;
+        font-size: 6.5pt;
+        color: #444;
+        font-style: italic;
+      }
+
+      table { width: 100%; border-collapse: collapse; font-size: 7.5pt; }
+      th, td { border: 1px solid var(--gray); padding: 2px 4px; text-align: left; }
+      th { background: #f3f4f6; font-weight: 600; }
+
+      pre {
+        margin: 0;
+        padding: 5px;
+        background: #f9fafb;
+        border: 1px solid var(--gray);
+        font-size: 6.5pt;
+        line-height: 1.2;
+        white-space: pre;
+        font-family: "SF Mono", Menlo, monospace;
+      }
+
+      ul { margin: 0; padding-left: 14px; }
+      li { margin-bottom: 1px; }
+
+      .checklist { columns: 2; column-gap: 10px; }
+      .checklist li { list-style: none; position: relative; padding-left: 14px; }
+      .checklist li::before { content: "☐"; position: absolute; left: 0; }
+
+      .note {
+        font-size: 7pt;
+        background: #ecfccb;
+        border-left: 3px solid var(--forest);
+        padding: 3px 5px;
+        margin-top: 4px;
+      }
+
+      footer {
+        margin-top: 6px;
+        background: var(--deep-forest);
+        color: #fff;
+        padding: 4px 6px;
+        font-size: 6.5pt;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .print-btn {
+        position: fixed; top: 12px; right: 12px;
+        padding: 8px 16px; background: var(--forest); color: #fff;
+        border: none; font: inherit; font-weight: 600; cursor: pointer;
+      }
+
+      @media print { .print-btn { display: none; } .page { padding: 0; } }
+    </style>
+  </head>
+  <body>
+    <button class="print-btn" onclick="window.print()">Print wiring card</button>
+
+    <div class="page">
+      <header>
+        <div class="brand">
+          <h1>Smart Irrigation — Wiring Card</h1>
+          <p>IoT Hands-on Kit · D-CoE IISc · ESP32 DevKit V1</p>
+        </div>
+        <span class="badge">D34 + D26</span>
+      </header>
+
+      <figure class="wiring-photo">
+        <img src="/assets/wiring-diagram.png" alt="Bench wiring — ESP32, soil moisture sensor, level shifter, relay, and pump" />
+        <figcaption>Purple: D34 → moisture AO · Orange: D26 → level shifter → relay IN · Power via USB</figcaption>
+      </figure>
+
+      <div class="grid">
+        <section>
+          <h2>Pin Map</h2>
+          <table>
+            <thead>
+              <tr><th>ESP32</th><th>Connects To</th><th>Rail</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>VIN / USB</strong></td><td>Breadboard + rail (5 V)</td><td>Top</td></tr>
+              <tr><td><strong>3V3</strong></td><td>Moisture VCC</td><td>Bottom</td></tr>
+              <tr><td><strong>GND</strong></td><td>Both GND rails (tie)</td><td>Both</td></tr>
+              <tr><td><strong>D34</strong></td><td>Moisture AO</td><td>—</td></tr>
+              <tr><td><strong>D26</strong></td><td>Level shifter LV1</td><td>—</td></tr>
+              <tr><td><strong>HV1</strong></td><td>Relay IN</td><td>5 V zone</td></tr>
+              <tr><td><strong>COM/NO</strong></td><td>5 V / Pump (+)</td><td>—</td></tr>
+            </tbody>
+          </table>
+
+          <h2>Jumper Checklist</h2>
+          <ul class="checklist">
+            <li>USB → ESP32 (power)</li>
+            <li>3V3 → Moisture VCC</li>
+            <li>D34 → Moisture AO</li>
+            <li>D26 → LL LV1</li>
+            <li>3V3 rail → LL LV</li>
+            <li>5V rail → LL HV + Relay VCC</li>
+            <li>LL HV1 → Relay IN</li>
+            <li>Top GND ↔ Bottom GND</li>
+            <li>COM → 5V, NO → Pump+</li>
+            <li>Pump (−) → GND</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Circuit (with Level Shifter)</h2>
+          <pre>
+                    ┌──── 5V RAIL (ESP32 VIN / USB) ─────────────────────┐
+                    │                                                    │
+  ESP32             │   MOISTURE      LEVEL SHIFTER         RELAY        │
+ ┌──────────┐       │  ┌─────────┐  LV side   HV side    ┌─────────┐     │
+ │ 3V3 ─────┼──3V3──┼──┤ VCC     │  LV ◄3V3   HV ◄───────┤ VCC     │     │
+ │ GND ─────┼──GND──┼──┤ GND     │  GND        GND       │ GND     │     │
+ │ D34 ─────┼───────┼──┤ AO      │  LV1 ◄D26   HV1 ──► IN│ IN      │     │
+ │ D26 ─────┼───────┼────────────►                      │ COM ◄───┼──5V │
+ │ VIN/USB  │       │  │ probes  │                       │ NO ─────┼──┐  │
+ └──────────┘       │  └─────────┘                       └─────────┘  │  │
+                    └──────────────────────────────────────────────────┘  │
+  PUMP  ┌──────┐                                                         │
+        │  + ◄─┼─────────────────────────────────────────────────────────┘
+        │  − ◄─┼── GND (common, tied to ESP32 GND)
+        └──────┘
+          </pre>
+          <div class="note">
+            <strong>Relay active LOW:</strong> D26 LOW → pump ON. Boot: D26 HIGH.
+            <strong>Moisture %:</strong> 100 − (raw / 4095 × 100).
+          </div>
+        </section>
+      </div>
+
+      <h2>Pre-Flight</h2>
+      <ul class="checklist">
+        <li>ESP32 powered via USB</li>
+        <li>Sensor on 3.3 V only</li>
+        <li>Level shifter between D26 &amp; relay IN</li>
+        <li>Common GND both rails</li>
+        <li>Probes in sensor terminals</li>
+        <li>config.h: Wi-Fi + server IP</li>
+        <li>Server running before ESP32</li>
+      </ul>
+
+      <footer>
+        <span>D-CoE · IISc Bangalore · Industry 4.0 IoT Hands-on Kit</span>
+        <span>/docs/wiring-card.html</span>
+      </footer>
+    </div>
+  </body>
+</html>

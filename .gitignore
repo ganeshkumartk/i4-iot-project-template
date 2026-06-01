@@ -1,0 +1,7 @@
+node_modules/
+.env
+firmware/config.h
+.DS_Store
+*.log
+data/telemetry-*.csv
+data/telemetry-*.jsonl
