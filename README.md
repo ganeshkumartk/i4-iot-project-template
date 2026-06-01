@@ -2,18 +2,20 @@
 
 Template repository for building a closed-loop smart irrigation system using the **Industry 4.0 IoT Hands-on Kit** components:
 
-| Component | Qty | Role |
-|-----------|-----|------|
-| ESP32 DevKit V1 | 1 | Microcontroller, Wi-Fi, control logic |
-| Soil Moisture Sensor board (YL-69) | 1 | Reads probe signal |
-| Soil Moisture Probes | 1 | Measures soil moisture |
-| Logic level shifter (4-ch) | 1 | 3.3 V → 5 V for relay IN |
-| Relay Module (SRD-05VDC) | 1 | Switches pump on/off |
-| DC Motor (pump) | 1 | Water delivery |
-| Breadboards + jumper wires | — | Dual-rail prototyping (5 V + 3.3 V) |
-| USB cable | 1 | Power & programming |
 
-See [`docs/wiring.md`](docs/wiring.md) for the full bench layout with level shifter.
+| Component                          | Qty | Role                                  |
+| ---------------------------------- | --- | ------------------------------------- |
+| ESP32 DevKit V1                    | 1   | Microcontroller, Wi-Fi, control logic |
+| Soil Moisture Sensor board (YL-69) | 1   | Reads probe signal                    |
+| Soil Moisture Probes               | 1   | Measures soil moisture                |
+| Logic level shifter (4-ch)         | 1   | 3.3 V → 5 V for relay IN              |
+| Relay Module (SRD-05VDC)           | 1   | Switches pump on/off                  |
+| DC Motor (pump)                    | 1   | Water delivery                        |
+| Breadboards + jumper wires         | —   | Dual-rail prototyping (5 V + 3.3 V)   |
+| USB cable                          | 1   | Power & programming                   |
+
+
+See `[docs/wiring.md](docs/wiring.md)` for the full bench layout with level shifter.
 
 ## Architecture
 
@@ -31,18 +33,48 @@ See [`docs/wiring.md`](docs/wiring.md) for the full bench layout with level shif
 
 ## Quick Start
 
+> **Windows users:** See **[docs/setup-windows.md](docs/setup-windows.md)**  
+>
+> 1. `scripts\install-node-windows.bat` (Node.js, first time)
+> 2. `scripts\setup.bat` → `scripts\start-server.bat`
+
 ### 1. Wire the hardware
 
-Follow the step-by-step guide: [`docs/wiring.md`](docs/wiring.md)
+Follow the step-by-step guide: `[docs/wiring.md](docs/wiring.md)`
 
 ### 2. Configure credentials
 
+**macOS / Linux / Windows (terminal):**
+
 ```bash
-cp .env.example .env
-# Edit .env with your Wi-Fi SSID/password and server IP
+npm run setup
 ```
 
-Copy `firmware/config.example.h` → `firmware/config.h` and fill in the same values.
+This copies `.env.example` → `.env` and `firmware/config.example.h` → `firmware/config.h`, then prints your suggested LAN IP.
+
+**Windows (double-click):** run `scripts\setup.bat`
+
+Edit `firmware/config.h` — set Wi-Fi credentials and `SERVER_HOST` to the IP shown (not `localhost`).
+
+**Manual copy:**
+
+```bash
+# macOS / Linux
+cp .env.example .env
+cp firmware/config.example.h firmware/config.h
+```
+
+```cmd
+REM Windows Command Prompt
+copy .env.example .env
+copy firmware\config.example.h firmware\config.h
+```
+
+```powershell
+# Windows PowerShell
+Copy-Item .env.example .env
+Copy-Item firmware\config.example.h firmware\config.h
+```
 
 ### 3. Flash the ESP32
 
@@ -51,6 +83,13 @@ Copy `firmware/config.example.h` → `firmware/config.h` and fill in the same va
 1. Install [Arduino IDE](https://www.arduino.cc/en/software) and the [ESP32 board support](https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html).
 2. Install libraries: **ArduinoJson** (via Library Manager).
 3. Open `firmware/smart_irrigation.ino`, set board to **ESP32 Dev Module**, select your port, and upload.
+
+  | OS      | Port name                                                                          |
+  | ------- | ---------------------------------------------------------------------------------- |
+  | Windows | **COM3**, COM4, … (Device Manager → Ports; install CH340/CP210x driver if missing) |
+  | macOS   | `/dev/cu.usbserial-`* or `/dev/cu.SLAB_USBtoUART`                                  |
+  | Linux   | `/dev/ttyUSB0` or `/dev/ttyACM0`                                                   |
+
 
 **Option B — PlatformIO**
 
@@ -66,32 +105,53 @@ npm install
 npm start
 ```
 
-Open **http://localhost:3000** for the dashboard.
+Open **[http://localhost:3000](http://localhost:3000)** for the dashboard.
 
 ### 5. Point ESP32 at your server
 
 Set `SERVER_HOST` in `firmware/config.h` to your computer's LAN IP (e.g. `192.168.1.42`), not `localhost`.
 
-Find your IP:
+Find your IP for `SERVER_HOST`:
 
 ```bash
-# macOS / Linux
-ipconfig getifaddr en0   # or: hostname -I
+# macOS
+ipconfig getifaddr en0
+
+# Linux
+hostname -I | awk '{print $1}'
+
+# Windows — Command Prompt
+ipconfig
+
+# Windows — PowerShell
+(Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -match 'Wi-Fi|Ethernet' }).IPAddress
 ```
+
+Or run `npm run setup` — it prints a suggested IP automatically.
+
+**Windows firewall:** Allow Node.js on private networks when prompted (port 3000) so ESP32 devices can reach the server. See [docs/setup-windows.md](docs/setup-windows.md).
 
 ## Printable Wiring Card
 
-Open **`docs/wiring-card.html`** in a browser and click **Print wiring card** for a one-page A4 reference (pin map, schematic, checklist). When the server is running it is also at:
+Open `**docs/wiring-card.html`** in a browser and click **Print wiring card** for a one-page A4 reference (pin map, schematic, checklist). When the server is running it is also at:
 
-**http://localhost:3000/docs/wiring-card.html**
+**[http://localhost:3000/docs/wiring-card.html](http://localhost:3000/docs/wiring-card.html)**
 
 ## Project Structure
 
 ```
 smart-irrigation/
 ├── docs/
+│   ├── setup-windows.md   # Windows step-by-step (students)
 │   ├── wiring.md          # Pin map, schematics, safety notes
 │   └── wiring-card.html   # One-page printable wiring reference
+├── scripts/
+│   ├── setup.js                  # Cross-platform setup (npm run setup)
+│   ├── install-node-windows.bat  # Install Node.js LTS (Windows)
+│   ├── install-node-windows.ps1
+│   ├── setup.bat                 # Windows project setup
+│   ├── setup.ps1                 # Windows PowerShell setup + IP list
+│   └── start-server.bat          # Windows start server
 ├── firmware/
 │   ├── smart_irrigation.ino
 │   ├── config.example.h   # Copy to config.h (gitignored)
@@ -109,13 +169,15 @@ smart-irrigation/
 
 ## API Reference
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/api/state` | Current system state (moisture, pump, mode) |
-| `POST` | `/api/telemetry` | ESP32 posts sensor readings |
-| `GET` | `/api/commands` | ESP32 polls for pending commands |
-| `POST` | `/api/control` | Dashboard sets pump/mode/thresholds |
-| `WS` | `/` | Realtime state broadcast to browsers |
+
+| Method | Path             | Description                                 |
+| ------ | ---------------- | ------------------------------------------- |
+| `GET`  | `/api/state`     | Current system state (moisture, pump, mode) |
+| `POST` | `/api/telemetry` | ESP32 posts sensor readings                 |
+| `GET`  | `/api/commands`  | ESP32 polls for pending commands            |
+| `POST` | `/api/control`   | Dashboard sets pump/mode/thresholds         |
+| `WS`   | `/`              | Realtime state broadcast to browsers        |
+
 
 ## Auto vs Manual Mode
 
@@ -146,10 +208,12 @@ For a **home router or phone hotspot**, keep `WIFI_USE_ENTERPRISE false` and set
 
 Every telemetry POST is appended to session files under `data/`:
 
-| File | Format |
-|------|--------|
-| `data/telemetry-<session>.csv` | Spreadsheet / pandas |
+
+| File                             | Format                   |
+| -------------------------------- | ------------------------ |
+| `data/telemetry-<session>.csv`   | Spreadsheet / pandas     |
 | `data/telemetry-<session>.jsonl` | One JSON object per line |
+
 
 Configure in `.env`:
 
@@ -160,12 +224,14 @@ DATA_SESSION_ID=20260602-iisc-workshop   # optional; defaults to today's date
 
 **Export after the workshop:**
 
-| URL | Use |
-|-----|-----|
-| `GET /api/data/export.csv` | Download CSV for Excel / pandas |
-| `GET /api/data/export.jsonl` | Download JSONL |
-| `GET /api/data/history` | JSON array in browser |
-| `GET /api/data/info` | Current session filenames |
+
+| URL                          | Use                             |
+| ---------------------------- | ------------------------------- |
+| `GET /api/data/export.csv`   | Download CSV for Excel / pandas |
+| `GET /api/data/export.jsonl` | Download JSONL                  |
+| `GET /api/data/history`      | JSON array in browser           |
+| `GET /api/data/info`         | Current session filenames       |
+
 
 **Quick pandas load:**
 
@@ -180,13 +246,18 @@ Logged files are gitignored — copy exports before deleting the `data/` folder.
 
 ## Troubleshooting
 
-| Issue | Fix |
-|-------|-----|
-| ESP32 won't connect to Wi-Fi | PSK: SSID/password in `config.h`. IISc: set `WIFI_USE_ENTERPRISE true` + username/password. Try phone hotspot if institute network blocks ESP32 |
-| Dashboard shows "Disconnected" | Server not running, or wrong IP in ESP32 config |
-| Moisture reads 0% or 100% | Check wiring on GPIO 34; default formula assumes 12-bit ADC — set `USE_CALIBRATION true` in config.h if needed |
-| Relay clicks but pump doesn't run | Pump on relay COM/NO with 5 V rail; check level shifter HV1 → relay IN |
-| Pump runs when it shouldn't | Active LOW relay — boot sets GPIO 26 HIGH; verify level shifter direction |
+
+| Issue                             | Fix                                                                                                                                             |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm` not recognized (Windows)    | Run `**scripts\install-node-windows.bat**`, restart terminal, or install LTS from [https://nodejs.org/](https://nodejs.org/)                    |
+| ESP32 port missing (Windows)      | Install CP210x or CH340 USB driver; check Device Manager → Ports                                                                                |
+| Firewall blocks ESP32 (Windows)   | Allow Node.js inbound on port 3000 — see `docs/setup-windows.md`                                                                                |
+| ESP32 won't connect to Wi-Fi      | PSK: SSID/password in `config.h`. IISc: set `WIFI_USE_ENTERPRISE true` + username/password. Try phone hotspot if institute network blocks ESP32 |
+| Dashboard shows "Disconnected"    | Server not running, or wrong IP in ESP32 config                                                                                                 |
+| Moisture reads 0% or 100%         | Check wiring on GPIO 34; default formula assumes 12-bit ADC — set `USE_CALIBRATION true` in config.h if needed                                  |
+| Relay clicks but pump doesn't run | Pump on relay COM/NO with 5 V rail; check level shifter HV1 → relay IN                                                                          |
+| Pump runs when it shouldn't       | Active LOW relay — boot sets GPIO 26 HIGH; verify level shifter direction                                                                       |
+
 
 ## License
 

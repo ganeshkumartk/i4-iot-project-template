@@ -4,6 +4,7 @@
   "description": "Smart irrigation system — ESP32 + realtime dashboard",
   "type": "module",
   "scripts": {
+    "setup": "node scripts/setup.js",
     "start": "node server/index.js",
     "dev": "node --watch server/index.js"
   },
