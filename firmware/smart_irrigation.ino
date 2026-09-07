@@ -30,6 +30,19 @@ unsigned long lastTelemetry = 0;
 unsigned long lastCommandPoll = 0;
 const unsigned long COMMAND_POLL_MS = 2000;
 
+const char* wifiStatusText(wl_status_t status) {
+  switch (status) {
+    case WL_IDLE_STATUS: return "IDLE";
+    case WL_NO_SSID_AVAIL: return "NO_SSID";
+    case WL_SCAN_COMPLETED: return "SCAN_DONE";
+    case WL_CONNECTED: return "CONNECTED";
+    case WL_CONNECT_FAILED: return "CONNECT_FAILED";
+    case WL_CONNECTION_LOST: return "CONNECTION_LOST";
+    case WL_DISCONNECTED: return "DISCONNECTED";
+    default: return "UNKNOWN";
+  }
+}
+
 // ── Relay (active LOW) ───────────────────────────────────────────────────────
 void setPump(bool on) {
   state.pumpOn = on;
@@ -151,40 +164,52 @@ bool pollCommands() {
 
 // ── Wi-Fi ────────────────────────────────────────────────────────────────────
 void connectWiFi() {
-  if (WiFi.status() == WL_CONNECTED) return;
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("[WiFi] Already connected");
+    return;
+  }
 
-  Serial.printf("Connecting to %s", WIFI_SSID);
+  Serial.printf("[WiFi] Preparing station mode for SSID: %s\n", WIFI_SSID);
   WiFi.mode(WIFI_STA);
-  WiFi.disconnect(true);
+  WiFi.persistent(false);
+  WiFi.setAutoReconnect(true);
+  WiFi.disconnect(true, true);
+  delay(300);
 
 #if WIFI_USE_ENTERPRISE
+  Serial.println("[WiFi] Auth mode: WPA2-Enterprise (identity/username/password)");
   // WPA2-Enterprise (IISc / institute networks — username + password)
   esp_wifi_sta_wpa2_ent_enable();
   esp_wifi_sta_wpa2_ent_set_identity((uint8_t *)WIFI_IDENTITY, strlen(WIFI_IDENTITY));
   esp_wifi_sta_wpa2_ent_set_username((uint8_t *)WIFI_USERNAME, strlen(WIFI_USERNAME));
   esp_wifi_sta_wpa2_ent_set_password((uint8_t *)WIFI_PASSWORD, strlen(WIFI_PASSWORD));
   WiFi.begin(WIFI_SSID);
-  Serial.print(" [enterprise]");
 #else
+  Serial.println("[WiFi] Auth mode: WPA2-PSK (SSID + password)");
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  Serial.print(" [PSK]");
 #endif
 
   int attempts = 0;
   while (WiFi.status() != WL_CONNECTED && attempts < 40) {
     delay(500);
-    Serial.print(".");
+    wl_status_t status = WiFi.status();
+    Serial.printf("[WiFi] Attempt %d/40 status: %s (%d)\n",
+                  attempts + 1, wifiStatusText(status), status);
     attempts++;
   }
-  Serial.println();
 
-  if (WiFi.status() == WL_CONNECTED) {
-    Serial.print("Wi-Fi connected, IP: ");
-    Serial.println(WiFi.localIP());
+  wl_status_t finalStatus = WiFi.status();
+  if (finalStatus == WL_CONNECTED) {
+    Serial.printf("[WiFi] Connected. IP: %s | RSSI: %d dBm\n",
+                  WiFi.localIP().toString().c_str(), WiFi.RSSI());
   } else {
-    Serial.println("Wi-Fi connection failed — will retry");
+    Serial.printf("[WiFi] Connection failed. Final status: %s (%d)\n",
+                  wifiStatusText(finalStatus), finalStatus);
+    Serial.println("[WiFi] Will retry using WIFI_RETRY_MS interval");
 #if WIFI_USE_ENTERPRISE
-    Serial.println("Enterprise tips: check identity/username/password; try phone hotspot if IISc blocks IoT devices");
+    Serial.println("[WiFi] Enterprise tip: verify identity/username/password and EAP settings");
+#else
+    Serial.println("[WiFi] PSK tip: verify SSID/password and ensure AP is 2.4 GHz");
 #endif
   }
 }
@@ -192,19 +217,25 @@ void connectWiFi() {
 // ── Setup & loop ─────────────────────────────────────────────────────────────
 void setup() {
   Serial.begin(115200);
-  delay(500);
-  Serial.println("\n=== Smart Irrigation ESP32 ===");
-  Serial.println("Moisture: GPIO 34 | Relay: GPIO 26 via level shifter");
+  delay(50);
+  Serial.println("\n[BOOT] setup() start");
+  Serial.println("=== Smart Irrigation ESP32 ===");
+  Serial.println("[BOOT] Moisture: GPIO 34 | Relay: GPIO 26 via level shifter");
+  Serial.printf("[BOOT] Relay active-low: %s\n", RELAY_ACTIVE_LOW ? "true" : "false");
+  Serial.printf("[BOOT] Free heap: %u bytes\n", ESP.getFreeHeap());
 
   pinMode(PIN_MOISTURE_AO, INPUT);
   pinMode(PIN_RELAY, OUTPUT);
   // Relay OFF at boot (active LOW → HIGH = off)
   digitalWrite(PIN_RELAY, RELAY_ACTIVE_LOW ? HIGH : LOW);
   state.pumpOn = false;
+  Serial.println("[BOOT] Pin initialization complete; relay forced OFF");
 
   analogReadResolution(12);
   analogSetAttenuation(ADC_11db);
+  Serial.println("[BOOT] ADC configured: 12-bit, 11dB attenuation");
 
+  Serial.println("[BOOT] Starting Wi-Fi connection");
   connectWiFi();
 }
 
