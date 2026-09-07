@@ -1,64 +1,126 @@
-# Using workshop telemetry data — Analytics / ML follow-up
+# Data Analysis and Machine Learning Workflow
 
-After the IoT hands-on session, moisture readings are saved on the facilitator machine.
+This project logs smart-irrigation telemetry so you can run post-workshop data analysis and a simple train/evaluate ML pipeline.
 
-## Get the data
+## 1) Collect telemetry data
 
-1. **During/after workshop:**  
-   `http://<facilitator-ip>:3000/api/data/export.csv`
+Export from the running server:
 
-2. **From disk:**  
-   `smart-irrigation/data/telemetry-<session-id>.csv`
+- `GET /api/data/export.csv`
+- `GET /api/data/export.jsonl`
+- `GET /api/data/history`
+- `GET /api/data/info`
 
-3. **JSON lines:**  
-   `GET /api/data/export.jsonl`
+Or use files already on disk:
 
-## CSV columns
+- `data/telemetry-<session-id>.csv`
+- `data/telemetry-<session-id>.jsonl`
 
-| Column | Description |
-|--------|-------------|
-| `timestamp` | ISO 8601 UTC when server received reading |
-| `deviceId` | ESP32 id (e.g. `esp32-irrigation-01`) |
-| `moistureRaw` | ADC value 0–4095 |
-| `moisturePercent` | Computed moisture % |
-| `pumpOn` | `true` / `false` |
-| `mode` | `auto` or `manual` |
-| `rssi` | Wi-Fi signal strength (dBm) |
-| `uptimeMs` | ESP32 uptime |
-| `dryThreshold` | Active dry threshold % |
-| `wetThreshold` | Active wet threshold % |
+## 2) Input schema
 
-## Python (pandas)
+CSV fields used by analysis:
+
+| Column | Type | Meaning |
+|---|---|---|
+| `timestamp` | ISO-8601 string | Server receive time for telemetry row |
+| `deviceId` | string | ESP32 identifier |
+| `moistureRaw` | number | ADC reading (0-4095) |
+| `moisturePercent` | number | Moisture percentage used by control logic |
+| `pumpOn` | boolean | Pump state at sample time |
+| `mode` | `auto`/`manual` | Current operating mode |
+| `rssi` | number | Wi-Fi strength in dBm |
+| `uptimeMs` | number | Device uptime |
+| `dryThreshold` | number | Active dry threshold (%) |
+| `wetThreshold` | number | Active wet threshold (%) |
+
+## 3) Built-in ML analysis script
+
+Run from repository root:
+
+```bash
+npm run analyze:ml
+```
+
+Optional explicit file:
+
+```bash
+npm run analyze:ml -- --input data/telemetry-20260602-iisc-workshop.csv
+```
+
+If `--input` is omitted, the script automatically picks the latest `data/telemetry-*.csv` file.
+
+## 4) What the script does
+
+File: `scripts/analyze-ml.js`
+
+### Preprocessing
+
+- Parses and sorts rows by `timestamp`
+- Drops invalid rows (bad timestamp or missing numeric moisture values)
+- Converts `pumpOn` to boolean, thresholds to numeric values
+- Engineers features:
+  - `moistureRollingMean3` (3-sample rolling mean)
+  - `moistureDelta` (difference from previous moisture %)
+- Creates label:
+  - `isDry = moisturePercent < dryThreshold`
+
+### Train/evaluate split
+
+- Chronological split (80% train, 20% test)
+- No shuffling, to match time-series behavior
+
+### Model
+
+- Type: single-feature threshold classifier
+- Feature: `moistureRaw`
+- Training objective: choose `moistureRaw` cutoff that maximizes **train F1** for `isDry`
+
+### Metrics reported
+
+For both train and test sets:
+
+- `accuracy`
+- `precision`
+- `recall`
+- `f1`
+- confusion counts (`tp`, `tn`, `fp`, `fn`)
+
+### Irrigation-specific efficiency output
+
+Also reports pump-cycle efficiency:
+
+- number of pump-ON events
+- number of completed wet-threshold cycles
+- average seconds from pump-ON to reaching wet threshold
+
+## 5) Output format
+
+The script prints a JSON summary with:
+
+- dataset and split sizes
+- preprocessing summary (`droppedInvalidRows`, engineered features, label definition)
+- learned threshold and train/test metrics
+- pump efficiency event summary
+
+Use this JSON as:
+
+- workshop report evidence
+- baseline before trying richer models
+- input for dashboards/notebooks
+
+## 6) Optional notebook workflow
+
+For advanced plotting/modeling, continue with pandas:
 
 ```python
 import pandas as pd
-import matplotlib.pyplot as plt
 
-df = pd.read_csv("telemetry-20260602-iisc-a.csv", parse_dates=["timestamp"])
+df = pd.read_csv("data/telemetry-20260602-iisc-workshop.csv", parse_dates=["timestamp"])
 df = df.sort_values("timestamp")
-
-# Moisture over time
-df.plot(x="timestamp", y="moisturePercent", title="Soil moisture %")
-plt.axhline(35, color="orange", linestyle="--", label="dry threshold")
-plt.axhline(65, color="blue", linestyle="--", label="wet threshold")
-plt.legend()
-plt.show()
-
-# Pump ON periods
-pump_on = df[df["pumpOn"] == True]
-print(f"Pump active for {len(pump_on)} samples")
 ```
 
-## Simple ML ideas (next session)
+Recommended next models (after baseline):
 
-1. **Binary classification:** Label rows dry (&lt;40%) vs wet (&gt;60%) from `moisturePercent`; train logistic regression on `moistureRaw`.
-2. **Anomaly detection:** Flag sudden drops in moisture (leak / removed probe).
-3. **Pump efficiency:** Time from pump ON until moisture crosses wet threshold.
-4. **Feature engineering:** Rolling mean of `moisturePercent` over 3 samples; delta from previous row.
-
-## Tips for a good dataset
-
-- Run at least one full cycle: **dry → pump ON → wet → pump OFF**
-- Vary probe placement (surface vs deep in cup)
-- Include 2–3 manual mode toggles for labelled pump events
-- Use a distinct `DATA_SESSION_ID` per workshop batch in `.env`
+1. Logistic regression with `moistureRaw`, rolling mean, and delta features
+2. Time-to-wet regression for pump efficiency prediction
+3. Anomaly detection for sudden moisture drops or sensor disconnections

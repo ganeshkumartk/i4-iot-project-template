@@ -6,7 +6,8 @@
   "scripts": {
     "setup": "node scripts/setup.js",
     "start": "node server/index.js",
-    "dev": "node --watch server/index.js"
+    "dev": "node --watch server/index.js",
+    "analyze:ml": "node scripts/analyze-ml.js"
   },
   "engines": {
     "node": ">=18"
