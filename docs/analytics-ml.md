@@ -2,6 +2,11 @@
 
 This project logs smart-irrigation telemetry so you can run post-workshop data analysis and a simple train/evaluate ML pipeline.
 
+You can use either:
+
+- **CLI** (`npm run analyze:ml`)
+- **Web UI** (`http://localhost:3000/ml.html`)
+
 ## 1) Collect telemetry data
 
 Export from the running server:
@@ -49,7 +54,31 @@ npm run analyze:ml -- --input data/telemetry-20260602-iisc-workshop.csv
 
 If `--input` is omitted, the script automatically picks the latest `data/telemetry-*.csv` file.
 
-## 4) What the script does
+Force synthetic lab dataset:
+
+```bash
+npm run analyze:ml -- --source synthetic
+```
+
+## 4) Web ML analysis page
+
+Open:
+
+- `http://localhost:3000/ml.html`
+
+The page calls:
+
+- `GET /api/ml/analysis` (auto source: CSV if available, synthetic fallback if not)
+- `GET /api/ml/analysis?source=synthetic` (force synthetic)
+
+The web view shows:
+
+- Moisture timeline with pump ON overlay and thresholds
+- Training threshold curve (F1 across candidate raw cutoffs)
+- Training scatter and train/test metric cards
+- Pump efficiency summary
+
+## 5) What the script does
 
 File: `scripts/analyze-ml.js`
 
@@ -93,7 +122,7 @@ Also reports pump-cycle efficiency:
 - number of completed wet-threshold cycles
 - average seconds from pump-ON to reaching wet threshold
 
-## 5) Output format
+## 6) Output format
 
 The script prints a JSON summary with:
 
@@ -108,7 +137,7 @@ Use this JSON as:
 - baseline before trying richer models
 - input for dashboards/notebooks
 
-## 6) Optional notebook workflow
+## 7) Optional notebook workflow
 
 For advanced plotting/modeling, continue with pandas:
 

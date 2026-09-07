@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Irrigation — ML Analysis</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="ml.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <div>
+          <p class="badge">Smart Irrigation · Analytics Lab</p>
+          <h1>Data Analysis and ML Training</h1>
+          <p class="sub">Train and evaluate a moisture classifier directly in the web dashboard.</p>
+        </div>
+        <div class="actions">
+          <button id="btnRefresh" class="btn btn--primary">Refresh Analysis</button>
+          <button id="btnSynthetic" class="btn">Use Synthetic Data</button>
+        </div>
+      </header>
+
+      <main class="grid">
+        <section class="card card--full">
+          <h2>Dataset & Model Summary</h2>
+          <div id="summary" class="summary"></div>
+        </section>
+
+        <section class="card card--full">
+          <h2>Moisture Timeline</h2>
+          <canvas id="timelineChart" height="120"></canvas>
+        </section>
+
+        <section class="card">
+          <h2>Training Threshold Curve (F1)</h2>
+          <canvas id="curveChart" height="180"></canvas>
+        </section>
+
+        <section class="card">
+          <h2>Training Scatter</h2>
+          <canvas id="scatterChart" height="180"></canvas>
+        </section>
+
+        <section class="card">
+          <h2>Train Metrics</h2>
+          <div id="trainMetrics" class="metrics"></div>
+        </section>
+
+        <section class="card">
+          <h2>Test Metrics</h2>
+          <div id="testMetrics" class="metrics"></div>
+        </section>
+
+        <section class="card card--full">
+          <h2>Pump Efficiency</h2>
+          <div id="pumpEfficiency" class="summary"></div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <a href="/">Realtime dashboard</a>
+        <span>·</span>
+        <a href="/docs/analytics-ml.md">Analytics docs</a>
+      </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="ml.js"></script>
+  </body>
+</html>

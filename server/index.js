@@ -9,6 +9,7 @@ import {
   readTelemetryCsv,
   readTelemetryJsonl,
 } from "./telemetry-log.js";
+import { analyzeTelemetryDataset } from "./ml-analysis.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(__dirname, "public");
@@ -202,6 +203,24 @@ app.get("/api/data/export.jsonl", (_req, res) => {
     `attachment; filename="telemetry-${paths.sessionId}.jsonl"`
   );
   res.sendFile(paths.jsonlPath);
+});
+
+app.get("/api/ml/analysis", (req, res) => {
+  try {
+    const sourceParam = String(req.query.source || "auto").toLowerCase();
+    const source = ["auto", "csv", "synthetic"].includes(sourceParam)
+      ? sourceParam
+      : "auto";
+
+    const result = analyzeTelemetryDataset({
+      dataDir,
+      source,
+    });
+
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message || "ML analysis failed" });
+  }
 });
 
 // Mark device offline if no telemetry for 15s

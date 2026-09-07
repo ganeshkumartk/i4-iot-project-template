@@ -35,7 +35,7 @@ See `[docs/wiring.md](docs/wiring.md)` for the full bench layout with level shif
 
 > **Windows users:** See **[docs/setup-windows.md](docs/setup-windows.md)**  
 >
-> 1. `scripts\install-node-windows.bat` (Node.js, first time)
+> 1. `scripts\install-all-deps-windows.bat` (Node.js + Python + package dependencies)
 > 2. `scripts\setup.bat` → `scripts\start-server.bat`
 
 ### 1. Wire the hardware
@@ -106,6 +106,7 @@ npm start
 ```
 
 Open **[http://localhost:3000](http://localhost:3000)** for the dashboard.
+Open **[http://localhost:3000/ml.html](http://localhost:3000/ml.html)** for ML analysis/training visuals.
 
 ### 5. Point ESP32 at your server
 
@@ -147,8 +148,11 @@ smart-irrigation/
 │   └── wiring-card.html   # One-page printable wiring reference
 ├── scripts/
 │   ├── setup.js                  # Cross-platform setup (npm run setup)
+│   ├── analyze-ml.js             # CLI baseline ML analysis
 │   ├── install-node-windows.bat  # Install Node.js LTS (Windows)
 │   ├── install-node-windows.ps1
+│   ├── install-all-deps-windows.bat  # Node + Python + package dependencies
+│   ├── install-all-deps-windows.ps1
 │   ├── setup.bat                 # Windows project setup
 │   ├── setup.ps1                 # Windows PowerShell setup + IP list
 │   └── start-server.bat          # Windows start server
@@ -164,6 +168,7 @@ smart-irrigation/
 │       └── app.js         # Realtime client
 ├── .env.example
 ├── package.json
+├── requirements-ml.txt
 └── README.md
 ```
 
@@ -249,6 +254,18 @@ Run baseline analytics/ML summary on telemetry data:
 ```bash
 npm run analyze:ml -- --input data/telemetry-<session>.csv
 ```
+
+Run synthetic fallback explicitly (useful for lab demos without logged CSV):
+
+```bash
+npm run analyze:ml -- --source synthetic
+```
+
+Web ML analysis API and UI:
+
+- `GET /api/ml/analysis` (auto: latest CSV or synthetic fallback)
+- `GET /api/ml/analysis?source=synthetic` (force synthetic lab data)
+- `http://localhost:3000/ml.html` (visual training + evaluation dashboard)
 
 See [docs/analytics-ml.md](docs/analytics-ml.md) for full workflow, preprocessing, training, and evaluation details.
 

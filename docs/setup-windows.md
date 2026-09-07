@@ -6,9 +6,23 @@ Step-by-step for **Windows 10/11** students and facilitators.
 
 | Software | How to install |
 |----------|----------------|
+| **Python 3.10+** | Included in **`scripts\install-all-deps-windows.bat`** (winget) |
 | **Node.js 18+ (LTS)** | Double-click **`scripts\install-node-windows.bat`** — or https://nodejs.org/ |
 | **Arduino IDE 2.x** | https://www.arduino.cc/en/software |
 | **ESP32 USB driver** | CH340 or CP210x (see Device Manager if port missing) |
+
+### One-shot install (recommended)
+
+Double-click:
+
+- **`scripts\install-all-deps-windows.bat`**
+
+This installs (using winget when needed):
+
+- Node.js LTS
+- Python 3.11
+- `npm install` packages
+- Python lab packages from `requirements-ml.txt` (`pandas`, `matplotlib`, `scikit-learn`)
 
 ### Install Node.js (automated)
 
@@ -35,7 +49,7 @@ You need **Node 18+**. If `node` is not recognized after install, **close and re
 ## Quick setup (double-click)
 
 1. Clone or download this repo and unzip.
-2. **`scripts\install-node-windows.bat`** — if Node.js is not installed yet.
+2. **`scripts\install-all-deps-windows.bat`** — installs Node.js + Python + dependencies.
 3. **`scripts\setup.bat`** — creates `firmware\config.h` and `.env`.
 4. **`scripts\start-server.bat`** — installs npm packages and starts the dashboard.
 
@@ -141,6 +155,7 @@ smart-irrigation\
 | URL | Purpose |
 |-----|---------|
 | http://localhost:3000 | Dashboard |
+| http://localhost:3000/ml.html | ML analysis and training visuals |
 | http://localhost:3000/docs/wiring-card.html | Wiring card |
 | http://localhost:3000/api/data/export.csv | Download sensor log |
 
@@ -150,7 +165,8 @@ Replace `localhost` with your PC IP when opening from another device on the same
 
 | Issue | Fix |
 |-------|-----|
-| `npm` not recognized | Run **`scripts\install-node-windows.bat`**, restart terminal, or install LTS from https://nodejs.org/ |
+| `npm` not recognized | Run **`scripts\install-all-deps-windows.bat`** or **`scripts\install-node-windows.bat`**, then restart terminal |
+| `python` not recognized | Run **`scripts\install-all-deps-windows.bat`** (installs Python via winget) |
 | `ExecutionPolicy` blocks `.ps1` | Use `.bat` files, or `powershell -ExecutionPolicy Bypass -File scripts\setup.ps1` |
 | Dashboard OK, ESP32 offline | Wrong `SERVER_HOST`; firewall blocking 3000; different Wi-Fi bands |
 | Moisture wrong | Check AO → GPIO 34; sensor on 3.3 V |
