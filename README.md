@@ -244,6 +244,14 @@ CSV columns: `timestamp`, `deviceId`, `moistureRaw`, `moisturePercent`, `pumpOn`
 
 Logged files are gitignored — copy exports before deleting the `data/` folder.
 
+Run baseline analytics/ML summary on telemetry data:
+
+```bash
+npm run analyze:ml -- --input data/telemetry-<session>.csv
+```
+
+See [docs/analytics-ml.md](docs/analytics-ml.md) for full workflow, preprocessing, training, and evaluation details.
+
 ## Troubleshooting
 
 
