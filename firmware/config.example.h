@@ -7,6 +7,7 @@
 // Option A — home / simple router (WPA2 password only):
 //   WIFI_USE_ENTERPRISE false
 //   WIFI_SSID + WIFI_PASSWORD
+//   (phone hotspots and home routers should use this mode)
 //
 // Option B — IISc / institute network (WPA2-Enterprise, username + password):
 //   WIFI_USE_ENTERPRISE true
